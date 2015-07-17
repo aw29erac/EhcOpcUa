@@ -32,7 +32,9 @@ function createSession(callback){
     	callback(err);
     });
 }
-
+/*
+ * Funktion zum Browsen des Servers
+ */
 function browse(callback){
     var browseDescription = {
             nodeId: "RootFolder",
@@ -43,10 +45,20 @@ function browse(callback){
 		if(!err) {
 			browse_result[0].references.forEach(function(reference) {
 				console.log( reference.browseName);
+//				the_session.browse(reference.browseName, function(err,browse_res){
+//					if(!err) {
+//						browse_res[0].references.forEach(function(ref) {
+//							console.log( ref.browseName);
+//							
+//						});
+//					}
+//					callback(err);
+//					});
 			});
 		}
 		callback(err);
 		});
+    
 }
 // read Variable with read          FUNKTIONIERT NICHT
 function readVar(callback){
