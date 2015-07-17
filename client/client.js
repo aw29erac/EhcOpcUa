@@ -9,6 +9,7 @@ var keypress = require('keypress');
 
 var client = new opcua.OPCUAClient();
 var endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/FAPS";
+var BrowseDirection = opcua.browse_service.BrowseDirection;
 
 var the_session, the_subscription;
 
@@ -33,11 +34,15 @@ function createSession(callback){
 }
 
 function browse(callback){
-    the_session.browse("RootFolder", function(err,browse_result){
+    var browseDescription = {
+            nodeId: "RootFolder",
+            includeSubtypes: true,
+            browseDirection: BrowseDirection.Inverse
+        }   
+	the_session.browse(browseDescription, function(err,browse_result){
 		if(!err) {
 			browse_result[0].references.forEach(function(reference) {
 				console.log( reference.browseName);
-				
 			});
 		}
 		callback(err);
@@ -78,7 +83,7 @@ function addSubscription(callback){
 	});
 
 	the_subscription.on("started",function(){
-	    console.log("subscription started for 2 seconds - subscriptionId=",the_subscription.subscriptionId);
+	    console.log("subscription started for 5 seconds - subscriptionId=",the_subscription.subscriptionId);
 	}).on("keepalive",function(){
 	    console.log("keepalive");
 	}).on("terminated",function(){
@@ -87,7 +92,7 @@ function addSubscription(callback){
 
 	setTimeout(function(){
 	    the_subscription.terminate();
-	},10000);
+	},5000);//5 Sekunden dann wird Subscription beendet
 
 	// install monitored item
 	var monitoredItem  = the_subscription.monitor({
@@ -147,7 +152,7 @@ async.series([
 //    readVar,
     
     //setp 6 : add Subscription
-    addSubscription,
+    //addSubscription,
     
     //step 5 : close_session
     closeSession
@@ -159,5 +164,7 @@ function(err) {
     } else {
         console.log("done!");
     }
+    console.log("Client disconnected!");
     client.disconnect(function(){});
+    process.exit();
 }) ;

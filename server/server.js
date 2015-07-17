@@ -1,5 +1,6 @@
 /*global require,setInterval,console */
-var opcua = require("node-opcua");
+var opcua = require("node-opcua"); //Module einbinden
+var tp = require("./types.js");
 
 // Let's create an instance of OPCUAServer
 var server = new opcua.OPCUAServer({
@@ -11,37 +12,6 @@ var server = new opcua.OPCUAServer({
         buildDate: new Date()
     }
 });
-
-function test(){
-	var temperatureSensorTypeParams = {
-		    browseName: "TemperatureSensorType",
-		};
-
-		var temperatureSensorType = address_space.addObjectType(temperatureSensorTypeParams);
-
-		address_space.addVariable(temperatureSensorType,{
-		    browseName:     "Temperature",
-		    description:    "The temperature value measured by the sensor",
-		    dataType:       "Double",
-		    modellingRule:  "Mandatory",
-		    value: { dataType: DataType.Double, value: 19.5}
-		});
-		var parentFolder = address_space.findObject("RootFolder");
-
-    	var temperatureSensor = temperatureSensorType.instantiate({
-    	    organizedBy: "RootFolder",
-    	    browseName:"MyTemperatureSensor"
-    	});
-		
-}
-
-function declareFolders(server){
-	 server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Badezimmer"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Wohnzimmer"});  	
-}
 
 function addVariable(server){
 	console.log("add Variable Temperatur Bad");
@@ -68,11 +38,11 @@ function post_initialize() {
     function construct_my_address_space(server) {
     
         // declare some folders
-    	declareFolders(server);
+    	tp.declareFolders(server);
     	
     	addVariable(server);
     	
-    	//test;        
+    	//types.test;        
     }
     
     construct_my_address_space(server);
@@ -90,4 +60,11 @@ function post_initialize() {
 
 server.initialize(post_initialize);
 
+setTimeout(function(){
+	console.log("Server is shutting down in 10 seconds!");
+    server.shutdown(10000, function(){ // Server schließt in 10000ms ?
+    	 console.log(" shutting down completed ");
+    	 process.exit(1);
+    });
+},30000);//30 Sekunden dann wird Server beendet
 
