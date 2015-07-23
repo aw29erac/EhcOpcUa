@@ -9,7 +9,7 @@
  */
 var declareFolders = function (server){
 	console.log("Got some folders");
-	 var meineWohnung = server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
+	 server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Badezimmer"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});

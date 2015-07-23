@@ -44,16 +44,22 @@ function browse(callback){
             includeSubtypes: true,
             browseDirection: BrowseDirection.Inverse
         }   
-	the_session.browse(browseDescription, function(err,browse_result){
-		if(!err) {
-			browse_result[0].references.forEach(function(reference) {
-				console.log("browseName: ", reference.browseName);
-				console.log("NamespaceIndex: ", reference.browseName.namespaceIndex);
-				console.log("nodeId: ", reference.nodeId.value);
-			});
-		}
-		callback(err);
-		});
+//	the_session.browse(browseDescription, function(err,browse_result){
+//		if(!err) {
+//			console.log("No browse error, browse.length: "+ browse_result.length.toString());
+//			for(var i=0; i<browse_result.length; i++){
+//				browse_result[i].references.forEach(function(item) {
+//					console.log("Incoming!");
+//					console.log("browseName: "+item.browseName);
+//					console.log("NamespaceIndex: "+item.browseName.namespaceIndex);
+//					console.log("nodeId: "+item.nodeId.value);
+//				});
+//			   }
+//		} else{
+//			console.log("Error: ", err);
+//		}
+//		callback(err);
+//		});
     //Browse again with NamespaceIndex and Identifier
     the_session.browse(browseDescription, function(err,browse_result){
 		if(!err) {
@@ -63,6 +69,7 @@ function browse(callback){
 		}
 		callback(err);
 		});
+    
 }
 // read Variable with read          FUNKTIONIERT NICHT
 function readVar(callback){
