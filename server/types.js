@@ -1,14 +1,19 @@
 /**
  * Code der die Types erstellt
  */
-//var nodeIdWohnung = new NodeId(NodeIdType.NUMERIC,123,1);
+
+/*
+ * TODO: 
+ * 		correct folder implementation
+ * 
+ */
 var declareFolders = function (server){
 	console.log("Got some folders");
-	 var meineWohnung = server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung", nodeId: "ns=2;s=MEINEWOHNUNG" });
-	 server.engine.createFolder(meineWohnung,{ browseName: "Badezimmer"});
-	 server.engine.createFolder(meineWohnung,{ browseName: "Küche"});
-	 server.engine.createFolder(meineWohnung,{ browseName: "Schlafzimmer"});
-	 server.engine.createFolder(meineWohnung,{ browseName: "Wohnzimmer"});  	
+	 var meineWohnung = server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
+	 server.engine.createFolder("MeineWohnung",{ browseName: "Badezimmer"});
+	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
+	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});
+	 server.engine.createFolder("MeineWohnung",{ browseName: "Wohnzimmer"});  	
 }
 
 var makeSomeTypes = function (){

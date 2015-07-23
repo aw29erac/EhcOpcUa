@@ -32,7 +32,12 @@ function createSession(callback){
     	callback(err);
     });
 }
-
+/*
+ * TODO: 	browse parent folder, this returns namespaceindex and identifier from subfolder
+ * 			browse subfolder
+ * 			like  var ns = item.browseName.namespaceIndex;
+ * 				  var i = item.nodeId.value;
+ */
 function browse(callback){
     var browseDescription = {
             nodeId: "RootFolder",
@@ -40,6 +45,17 @@ function browse(callback){
             browseDirection: BrowseDirection.Inverse
         }   
 	the_session.browse(browseDescription, function(err,browse_result){
+		if(!err) {
+			browse_result[0].references.forEach(function(reference) {
+				console.log("browseName: ", reference.browseName);
+				console.log("NamespaceIndex: ", reference.browseName.namespaceIndex);
+				console.log("nodeId: ", reference.nodeId.value);
+			});
+		}
+		callback(err);
+		});
+    //Browse again with NamespaceIndex and Identifier
+    the_session.browse(browseDescription, function(err,browse_result){
 		if(!err) {
 			browse_result[0].references.forEach(function(reference) {
 				console.log( reference.browseName);
