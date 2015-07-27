@@ -4,6 +4,7 @@
 
 var opcua = require("node-opcua");
 var async = require("async");
+var crawler = require('./node_modules/node-opcua/lib/client/node_crawler.js');
 var keypress = require('keypress');
 
 var treeify = require('treeify');
