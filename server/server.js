@@ -38,11 +38,14 @@ function post_initialize() {
 
 server.initialize(post_initialize);
 
-setTimeout(function(){
-	console.log("Server is shutting down in 10 seconds!");
-    server.shutdown(10000, function(){ // Server schließt in 10000ms ?
-    	 console.log(" shutting down completed ");
-    	 process.exit(1);
-    });
-},30000);//30 Sekunden dann wird 10 Sekunden Countdown gestartet
+/*
+ * server timeout
+ */
+//setTimeout(function(){
+//	console.log("Server is shutting down in 10 seconds!");
+//    server.shutdown(10000, function(){ // Server schließt in 10000ms ?
+//    	 console.log(" shutting down completed ");
+//    	 process.exit(1);
+//    });
+//},30000);//30 Sekunden dann wird 10 Sekunden Countdown gestartet
 

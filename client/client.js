@@ -4,10 +4,10 @@
 
 var opcua = require("node-opcua");
 var async = require("async");
-var crawler = require('./node_modules/node-opcua/lib/client/node_crawler.js');
 var keypress = require('keypress');
 
 var treeify = require('treeify');
+var NodeCrawler = opcua.NodeCrawler;
 var client = new opcua.OPCUAClient();
 var endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/FAPS";
 var BrowseDirection = opcua.browse_service.BrowseDirection;
@@ -33,37 +33,24 @@ function createSession(callback){
     });
 }
 /*
- * browse subfolders with given namespaceIndex and nodeId of parentFolder
+ * node crawler
  */
-function browseSubfolders(namespace, ni){
-	if(typeof ni === "string"){
-		console.log("Error: nodId of type String!");
-		return;
-	}
-	var browseDescription = {
-			nodeId: ni,
-//			nodeId: 1000,
-			ns: namespace
-//			ns: 0
-	}
-	console.log("Got this nodeId: "+ni.toString()+" and this namespaceIndex: "+namespace.toString());
-	
-	the_session.browse( browseDescription ,function (err, itemResults,diagnostics) {
-		console.log("Subfolders: ")  
-		if (!err) {
-			//debuggen: wieso wird hier nichts ausgegeben?
-	    	itemResults[0].references.forEach(function(items) {
-	    		console.log(items.browseName.toString()+", node ID: "+ items.nodeId.value.toString());
-			});
-		   }else{
-			   console.log(err);
-			    console.log(itemResults.toString());
-			    console.log(diagnostics);
+function crawl(nodeId){
+	var crawler = new NodeCrawler(the_session);
+
+	crawler.on("browsed",function(element){
+//         console.log("->",element.browseName.name,element.nodeId.toString());
+    });
+	crawler.read(nodeId, function(err, obj){
+		if(!err){
+			treeify.asLines(obj, true, true, function (line) {
+				console.log(line);
+			});		
 		}
-	});
+	});	
 }
 /*
- * Browse "Root Folder" and subfolders of "MeineWohnung" folder
+ * Browse "Root Folder" and crawls subfolders of "MeineWohnung" folder
  */
 function browse(callback){
 	the_session.browse("RootFolder", function(err,browse_result){
@@ -71,34 +58,9 @@ function browse(callback){
 			browse_result[0].references.forEach(function(item) {
 					console.log("my browseName: "+item.browseName.name.toString()+", node ID: "+ item.nodeId.value.toString()+", namespace: "+ item.browseName.namespaceIndex.toString()); 
 					// NodeCrawler Versuch
-					var nodeId = item.nodeId;
-					var nodeCrawler = new crawler.NodeCrawler(the_session);
-					nodeCrawler.read(nodeId, function(){
-	                    if(err){
-	                        console.log("Error : trying to read with NodeCrawler ... ", err);
-	                        the_session.close(function(err){ // close session
-	                            console.log(" session closed");
-	                            client.disconnect(function(err){ // disconnect
-	                                if (err){ console.log("Error : trying to disconnect ... ",err); 
-	                                } else { console.log(" disconnected! "); }
-	                            });
-	                        });
-	                    } else {
-	                        console.log("BP5");
-	                        treeify.asLines(obj, true, true, function (line) {
-	                            console.log(line);
-	                        });
-	                        var res = obj; // siehe 
-	                        console.log(JSON.stringify(res, null, 4));
-	                        the_session.close(function(err){ // close session
-	                            console.log(" session closed");
-	                            client.disconnect(function(err){ // disconnect
-	                                if (err){ console.log("Error : trying to disconnect ... ",err); 
-	                                } else { console.log(" disconnected! "); }
-	                            });
-	                        });
-	                    } // -- // -- else
-				});	
+					if(item.browseName.name.toString() == "MeineWohnung"){
+						crawl(item.nodeId);		
+					}
 			}); // -- // -- forEach
 		} else {
 			console.log("Error: ", err);
@@ -106,30 +68,10 @@ function browse(callback){
 		callback(err);
 		});
 }
-// read Variable with read          FUNKTIONIERT NICHT
-function readVar(callback){
-	var max_age = 0;
-	var nodes_to_read = [
-	   { nodeId: "ns=4;s=temp_bad", attributeId: 13} 
-	];
-	the_session.read(nodes_to_read, max_age, function(err,nodes_to_read,dataValues) {
-	    if (!err) {
-	        console.log("Temperatur Bad= " , dataValues[0]);
-	    }
-	    callback(err);
-	});
-}
-
-//read Variable Value          FUNKTIONIERT NICHT
-function readVariableValue(callback){
-	the_session.readVariableValue("ns=4;s=temp_bad", function(err,dataValues) {
-	    if (!err) {
-	        console.log(" Temperatur Badezimmer °C = " , dataValues);
-	    }
-	    callback(err);
-	});
-}
-//add Subscription
+/*
+ * add Subscription for temp_bad
+ * runs 5 seconds
+ */
 function addSubscription(callback){
 	the_subscription=new opcua.ClientSubscription(the_session,{
 	    requestedPublishingInterval: 1000,
@@ -202,13 +144,7 @@ async.series([
 
     // step 3 : browse
     browse,
-    
-    //step 4 : read Variable Value
-//    readVariableValue,
-    
-    //step 5 : read Variable
-//    readVar,
-    
+
     //setp 6 : add Subscription
     //addSubscription,
     
