@@ -9,6 +9,7 @@ var keypress = require('keypress');
 
 var client = new opcua.OPCUAClient();
 var endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/FAPS";
+var BrowseDirection = opcua.browse_service.BrowseDirection;
 
 var the_session, the_subscription;
 
@@ -31,14 +32,52 @@ function createSession(callback){
     	callback(err);
     });
 }
-
-function browse(callback){
-    the_session.browse("RootFolder", function(err,browse_result){
-		if(!err) {
-			browse_result[0].references.forEach(function(reference) {
-				console.log( reference.browseName);
-				
+/*
+ * browse subfolders with given namespaceIndex and nodeId of parentFolder
+ */
+function browseSubfolders(namespace, ni){
+	if(typeof ni === "string"){
+		console.log("Error: nodId of type String!");
+		return;
+	}
+	var browseDescription = {
+			nodeId: ni,
+//			nodeId: 1000,
+			ns: namespace
+//			ns: 0
+	}
+	console.log("Got this nodeId: "+ni.toString()+" and this namespaceIndex: "+namespace.toString());
+	
+	the_session.browse( browseDescription ,function (err, itemResults,diagnostics) {
+		console.log("Subfolders: ")  
+		if (!err) {
+			//debuggen: wieso wird hier nichts ausgegeben?
+	    	itemResults[0].references.forEach(function(items) {
+	    		console.log(items.browseName.toString()+", node ID: "+ items.nodeId.value.toString());
 			});
+		   }else{
+			   console.log(err);
+			    console.log(itemResults.toString());
+			    console.log(diagnostics);
+		}
+	});
+}
+/*
+ * Browse "Root Folder" and subfolders of "MeineWohnung" folder
+ */
+function browse(callback){
+	the_session.browse("RootFolder", function(err,browse_result){
+		if(!err) {
+			browse_result[0].references.forEach(function(item) {
+					console.log("my displayName: "+item.displayName.text+", my browseName: "+item.browseName.toString()+", node ID: "+ item.nodeId.value.toString()+", namespace: "+ item.browseName.namespaceIndex.toString()); 
+				
+					//Browse again with NamespaceIndex and Identifier
+					if(item.browseName.name.toString() == "MeineWohnung"){
+						 browseSubfolders(item.browseName.namespaceIndex, item.nodeId.value);
+					}
+				});	   
+		} else{
+			console.log("Error: ", err);
 		}
 		callback(err);
 		});
@@ -78,7 +117,7 @@ function addSubscription(callback){
 	});
 
 	the_subscription.on("started",function(){
-	    console.log("subscription started for 2 seconds - subscriptionId=",the_subscription.subscriptionId);
+	    console.log("subscription started for 5 seconds - subscriptionId=",the_subscription.subscriptionId);
 	}).on("keepalive",function(){
 	    console.log("keepalive");
 	}).on("terminated",function(){
@@ -87,7 +126,7 @@ function addSubscription(callback){
 
 	setTimeout(function(){
 	    the_subscription.terminate();
-	},10000);
+	},5000);//5 Sekunden dann wird Subscription beendet
 
 	// install monitored item
 	var monitoredItem  = the_subscription.monitor({
@@ -107,9 +146,9 @@ function addSubscription(callback){
 	   console.log(" Temperatur Bad = ",dataValue.value.value);
 	});
 }
-
-
-// close Session at hitting enter
+/*
+ * close Session hitting "enter"
+ */
 function closeSession(callback){
 	//make `process.stdin` begin emitting "keypress" events 
 	keypress(process.stdin);
@@ -147,7 +186,7 @@ async.series([
 //    readVar,
     
     //setp 6 : add Subscription
-    addSubscription,
+    //addSubscription,
     
     //step 5 : close_session
     closeSession
@@ -159,5 +198,7 @@ function(err) {
     } else {
         console.log("done!");
     }
+    console.log("Client disconnected!");
     client.disconnect(function(){});
+    process.exit();
 }) ;
