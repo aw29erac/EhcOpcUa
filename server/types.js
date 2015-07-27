@@ -32,26 +32,30 @@ function addVariable(server, parent, browseName){
  *  	create subfolders 
  *  	parentFolder must be a String
  */
-var declareFolders = function (server){
-	console.log("Got some folders");
-	
+var declareFolders = function (server){	
 	 var parentFolder = server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
 	 //debuggen: warum werden diese folder nicht angezeigt?
 	 server.engine.createFolder(parentFolder,{ browseName: "Badezimmer"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Wohnzimmer"});  	
+	 server.engine.createFolder(parentFolder,{ browseName: "Küche"});
+	 server.engine.createFolder(parentFolder,{ browseName: "Schlafzimmer"});
+	 server.engine.createFolder(parentFolder,{ browseName: "Wohnzimmer"});  	
 	 
 	 addVariable(server, "RootFolder","Testvariable1" );
 	 addVariable(server, parentFolder, "Variable in MeineWohnung");
 }
 /*
  * add types and mandatory variables
+ * 
+ * TODO:
+ * 		Läuft ned! 
+ * 		Beispiele anschauen vllt simple_client.js
+ * 					oder 
  */
-var makeSomeTypes = function (){
+var makeSomeTypes = function (address_space){
 	var RaumTypeParams = {
 		    browseName: "RaumType"
 		};
+	//Fehler!
 	var RaumType = address_space.addObjectType(RaumTypeParams);
 	
 	address_space.addVariable(RaumType,{
@@ -62,11 +66,17 @@ var makeSomeTypes = function (){
 	    value: { dataType: DataType.Double, value: 19.5}
 	});	
 }
+
 /*
  * Bilden von Instanzen der vorher erstellten Types
  */
-var instanzenBilden = function(){
-	
+var makeRoom = function(address_space, roomName, parentName){
+	var parentFolder = address_space.findObject(parentName);
+
+	var room = RaumType.instantiate({
+	    organizedBy: parentName,
+	    browseName:roomName
+	});
 }
 
 function test(){
@@ -93,7 +103,7 @@ function test(){
     	});
 		
 }
-
+exports.makeRoom = makeRoom;
 exports.makeSomeTypes = makeSomeTypes;
 exports.declareFolders = declareFolders;
 exports.test = test;

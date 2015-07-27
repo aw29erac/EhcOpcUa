@@ -16,10 +16,11 @@ var server = new opcua.OPCUAServer({
 function post_initialize() {
     console.log("initialized");
     function construct_my_address_space(server) {
-    
+    	var address_space = server.engine.address_space;
         // declare some folders
     	tp.declareFolders(server);
-    	
+    	tp.makeSomeTypes(address_space);
+    	tp.makeRoom(address_space, "Mein toller Raum", "MeineWohnung");
     	//types.test;        
     }
     
