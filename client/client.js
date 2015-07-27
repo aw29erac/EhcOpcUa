@@ -4,13 +4,13 @@
 
 var opcua = require("node-opcua");
 var async = require("async");
+var crawler = require('./node_modules/node-opcua/lib/client/node_crawler.js');
 var keypress = require('keypress');
 
-
+var treeify = require('treeify');
 var client = new opcua.OPCUAClient();
 var endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/FAPS";
 var BrowseDirection = opcua.browse_service.BrowseDirection;
-
 var the_session, the_subscription;
 
 function connect(callback){
@@ -70,13 +70,37 @@ function browse(callback){
 		if(!err) {
 			browse_result[0].references.forEach(function(item) {
 					console.log("my displayName: "+item.displayName.text+", my browseName: "+item.browseName.toString()+", node ID: "+ item.nodeId.value.toString()+", namespace: "+ item.browseName.namespaceIndex.toString()); 
-				
-					//Browse again with NamespaceIndex and Identifier
-					if(item.browseName.name.toString() == "MeineWohnung"){
-						 browseSubfolders(item.browseName.namespaceIndex, item.nodeId.value);
-					}
-				});	   
-		} else{
+					// NodeCrawler Versuch
+					var nodeId = item.nodeId;
+					var nodeCrawler = new crawler.NodeCrawler(the_session);
+					nodeCrawler.read(nodeId, function(){
+	                    if(err){
+	                        console.log("Error : trying to read with NodeCrawler ... ", err);
+	                        the_session.close(function(err){ // close session
+	                            console.log(" session closed");
+	                            client.disconnect(function(err){ // disconnect
+	                                if (err){ console.log("Error : trying to disconnect ... ",err); 
+	                                } else { console.log(" disconnected! "); }
+	                            });
+	                        });
+	                    } else {
+	                        console.log("BP5");
+	                        treeify.asLines(obj, true, true, function (line) {
+	                            console.log(line);
+	                        });
+	                        var res = obj; // siehe 
+	                        console.log(JSON.stringify(res, null, 4));
+	                        the_session.close(function(err){ // close session
+	                            console.log(" session closed");
+	                            client.disconnect(function(err){ // disconnect
+	                                if (err){ console.log("Error : trying to disconnect ... ",err); 
+	                                } else { console.log(" disconnected! "); }
+	                            });
+	                        });
+	                    } // -- // -- else
+				});	
+			}); // -- // -- forEach
+		} else {
 			console.log("Error: ", err);
 		}
 		callback(err);
