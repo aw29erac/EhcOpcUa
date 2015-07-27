@@ -1,24 +1,26 @@
 /**
- * Code der die Types erstellt
+ * Code der die Types, Ordner und Variablen erstellt
  */
 var opcua = require("node-opcua");
 /*
- * TODO: 
- * 		correct folder implementation
- * 
+ *	add variable with given name and parent object 
  */
-
-function addVariable(server, parent, name){
-	console.log("add Variable: "+name);
+function addVariable(server, parent, browseName){
+	console.log("add Variable: "+browseName);
 	var counter = 1;
 
 	// emulate variable1 changing every 500 ms
 	setInterval(function(){  counter+=1; }, 500);
 
 	server.nodeVariable1 = server.engine.addVariableInFolder(parent,{
-	        browseName: name,
+	        browseName: browseName,
 	        dataType: "Double",
 	        value: {
+	        	/**
+	             * returns the  current value as a Variant
+	             * @method get
+	             * @return {Variant}
+	             */
 	            get: function () {
 	                return new opcua.Variant({dataType: opcua.DataType.Double, value: counter });
 	            }
@@ -33,17 +35,19 @@ function addVariable(server, parent, name){
 var declareFolders = function (server){
 	console.log("Got some folders");
 	
-	 server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
+	 var parentFolder = server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
 	 //debuggen: warum werden diese folder nicht angezeigt?
-	 server.engine.createFolder("MeineWohnung",{ browseName: "Badezimmer"});
+	 server.engine.createFolder(parentFolder,{ browseName: "Badezimmer"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Wohnzimmer"});  	
 	 
 	 addVariable(server, "RootFolder","Testvariable1" );
-	 addVariable(server, "MeineWohnung", "Variable in MeineWohnung");
+	 addVariable(server, parentFolder, "Variable in MeineWohnung");
 }
-
+/*
+ * add types and mandatory variables
+ */
 var makeSomeTypes = function (){
 	var RaumTypeParams = {
 		    browseName: "RaumType"

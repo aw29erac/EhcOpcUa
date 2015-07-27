@@ -44,5 +44,5 @@ setTimeout(function(){
     	 console.log(" shutting down completed ");
     	 process.exit(1);
     });
-},30000);//30 Sekunden dann wird Server beendet
+},30000);//30 Sekunden dann wird 10 Sekunden Countdown gestartet
 
