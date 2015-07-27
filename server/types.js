@@ -1,19 +1,47 @@
 /**
  * Code der die Types erstellt
  */
-
+var opcua = require("node-opcua");
 /*
  * TODO: 
  * 		correct folder implementation
  * 
  */
+
+function addVariable(server, parent, name){
+	console.log("add Variable: "+name);
+	var counter = 1;
+
+	// emulate variable1 changing every 500 ms
+	setInterval(function(){  counter+=1; }, 500);
+
+	server.nodeVariable1 = server.engine.addVariableInFolder(parent,{
+	        browseName: name,
+	        dataType: "Double",
+	        value: {
+	            get: function () {
+	                return new opcua.Variant({dataType: opcua.DataType.Double, value: counter });
+	            }
+	        }
+	});
+}
+/*
+ * TODO:
+ *  	create subfolders 
+ *  	parentFolder must be a String
+ */
 var declareFolders = function (server){
 	console.log("Got some folders");
+	
 	 server.engine.createFolder("RootFolder",{ browseName: "MeineWohnung"});
+	 //debuggen: warum werden diese folder nicht angezeigt?
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Badezimmer"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Küche"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Schlafzimmer"});
 	 server.engine.createFolder("MeineWohnung",{ browseName: "Wohnzimmer"});  	
+	 
+	 addVariable(server, "RootFolder","Testvariable1" );
+	 addVariable(server, "MeineWohnung", "Variable in MeineWohnung");
 }
 
 var makeSomeTypes = function (){
@@ -61,6 +89,7 @@ function test(){
     	});
 		
 }
+
 exports.makeSomeTypes = makeSomeTypes;
 exports.declareFolders = declareFolders;
 exports.test = test;

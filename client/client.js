@@ -33,43 +33,54 @@ function createSession(callback){
     });
 }
 /*
- * TODO: 	browse parent folder, this returns namespaceindex and identifier from subfolder
- * 			browse subfolder
- * 			like  var ns = item.browseName.namespaceIndex;
- * 				  var i = item.nodeId.value;
+ * browse subfolders with given namespaceIndex and nodeId of parentFolder
+ */
+function browseSubfolders(namespace, ni){
+	if(typeof ni === "string"){
+		console.log("Error: nodId of type String!");
+		return;
+	}
+	var browseDescription = {
+			nodeId: ni,
+//			nodeId: 1000,
+			ns: namespace
+//			ns: 0
+	}
+	console.log("Got this nodeId: "+ni.toString()+" and this namespaceIndex: "+namespace.toString());
+	
+	the_session.browse( browseDescription ,function (err, itemResults,diagnostics) {
+		console.log("Subfolders: ")  
+		if (!err) {
+			//debuggen: wieso wird hier nichts ausgegeben?
+	    	itemResults[0].references.forEach(function(items) {
+	    		console.log(items.browseName.toString()+", node ID: "+ items.nodeId.value.toString());
+			});
+		   }else{
+			   console.log(err);
+			    console.log(itemResults.toString());
+			    console.log(diagnostics);
+		}
+	});
+}
+/*
+ * Browse "Root Folder" and subfolders of "MeineWohnung" folder
  */
 function browse(callback){
-    var browseDescription = {
-            nodeId: "RootFolder",
-            includeSubtypes: true,
-            browseDirection: BrowseDirection.Inverse
-        }   
-//	the_session.browse(browseDescription, function(err,browse_result){
-//		if(!err) {
-//			console.log("No browse error, browse.length: "+ browse_result.length.toString());
-//			for(var i=0; i<browse_result.length; i++){
-//				browse_result[i].references.forEach(function(item) {
-//					console.log("Incoming!");
-//					console.log("browseName: "+item.browseName);
-//					console.log("NamespaceIndex: "+item.browseName.namespaceIndex);
-//					console.log("nodeId: "+item.nodeId.value);
-//				});
-//			   }
-//		} else{
-//			console.log("Error: ", err);
-//		}
-//		callback(err);
-//		});
-    //Browse again with NamespaceIndex and Identifier
-    the_session.browse(browseDescription, function(err,browse_result){
+	the_session.browse("RootFolder", function(err,browse_result){
 		if(!err) {
-			browse_result[0].references.forEach(function(reference) {
-				console.log( reference.browseName);
-			});
+			browse_result[0].references.forEach(function(item) {
+					console.log("my displayName: "+item.displayName.text+", my browseName: "+item.browseName.toString()+", node ID: "+ item.nodeId.value.toString()+", namespace: "+ item.browseName.namespaceIndex.toString()); 
+				
+					//Browse again with NamespaceIndex and Identifier
+					if(item.browseName.name.toString() == "MeineWohnung"){
+						 browseSubfolders(item.browseName.namespaceIndex, item.nodeId.value);
+					}
+				});	   
+		} else{
+			console.log("Error: ", err);
 		}
 		callback(err);
 		});
-    
 }
 // read Variable with read          FUNKTIONIERT NICHT
 function readVar(callback){
@@ -135,9 +146,9 @@ function addSubscription(callback){
 	   console.log(" Temperatur Bad = ",dataValue.value.value);
 	});
 }
-
-
-// close Session at hitting enter
+/*
+ * close Session hitting "enter"
+ */
 function closeSession(callback){
 	//make `process.stdin` begin emitting "keypress" events 
 	keypress(process.stdin);

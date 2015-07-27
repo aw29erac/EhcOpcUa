@@ -13,34 +13,12 @@ var server = new opcua.OPCUAServer({
     }
 });
 
-function addVariable(server){
-	console.log("add Variable Temperatur Bad");
-	// add Variable 
-	var temperaturBadezimmer = 1;
-
-	// emulate variable1 changing every 500 ms
-	setInterval(function(){  temperaturBadezimmer+=1; }, 500);
-
-	server.nodeVariable1 = server.engine.addVariableInFolder("Badezimmer",{
-			nodeId: "ns=4;s=temp_bad", // a String NodeId in namespace 4
-	        browseName: "TemperaturBadezimmer",
-	        dataType: "Double",
-	        value: {
-	            get: function () {
-	                return new opcua.Variant({dataType: opcua.DataType.Double, value: temperaturBadezimmer });
-	            }
-	        }
-	});
-}
-
 function post_initialize() {
     console.log("initialized");
     function construct_my_address_space(server) {
     
         // declare some folders
     	tp.declareFolders(server);
-    	
-    	addVariable(server);
     	
     	//types.test;        
     }
